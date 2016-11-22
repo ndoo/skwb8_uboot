@@ -1286,38 +1286,6 @@ int check_image_validation(void)
 }
 #endif
 
-
-void bootcount_store(ulong a)
-{
-	char bcs_set[16];
-	sprintf (bcs_set, "%lu", a);
-	setenv ("bootcount", bcs_set);
-	saveenv();
-}
-
-ulong bootcount_load(void)
-{
-	ulong val = 0;
-	char *bcs;
-
-	bcs = getenv ("bootcount");
-	val = bcs ? simple_strtoul (bcs, NULL, 10) : 0;
-
-	return val;
-}
-
-ulong recovery_offset_load(void)
-{
-	ulong val = 14548992;
-	char *bcs;
-
-	bcs = getenv ("recovery_offset");
-	val = bcs ? simple_strtoul (bcs, NULL, 10) : 14548992;
-
-	return val;
-}
-
-
 /************************************************************************
  *
  * This is the next part if the initialization sequence: we are now
@@ -2012,25 +1980,11 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 	putc ('\n');
 	if(BootType == '3') {
 		char *argv[2];
-		unsigned long bootcount = 0;
 
-		bootcount = bootcount_load();
-		printf("bootcount: %lu\n", bootcount);
-		bootcount++;
-
-		if (bootcount > 3) {
-			sprintf(addr_str, "0x%X", CFG_KERN_ADDR + recovery_offset_load());
-			if(bootcount >= 6) {
-				bootcount = 0;
-			}
-		} else {
-			sprintf(addr_str, "0x%X", CFG_KERN_ADDR);
-		}
+		sprintf(addr_str, "0x%X", CFG_KERN_ADDR);
 
 		argv[1] = &addr_str[0];
 		printf("   \n3: System Boot system code via Flash.\n");
-
-		bootcount_store(bootcount);
 
 		do_bootm(cmdtp, 0, 2, argv);
 	}
